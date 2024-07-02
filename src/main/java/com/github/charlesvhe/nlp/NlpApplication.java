@@ -86,20 +86,18 @@ public class NlpApplication {
             int index = term.toString().lastIndexOf('/');
             //如果句子包含地名或者人名就进行脱敏
             if (word.contains("ns")) {
-                desensitizedText.append(DesensitizedUtil.address(word.substring(0, index), word.length() - index));
+                text = text.replaceAll(word.substring(0, index), DesensitizedUtil.address(word.substring(0, index), word.length() - index));
             } else if (word.contains("nr")) {
-                desensitizedText.append(DesensitizedUtil.chineseName(word.substring(0, index)));
-            } else {
-                //如果不是隐私信息，就直接拼接原文
-                desensitizedText.append(term.toString(), 0, index);
+                text = text.replaceAll(word.substring(0, index), DesensitizedUtil.chineseName(word.substring(0, index)));
+
             }
         }
-        return desensitizedText.toString();
+        return text;
     }
 
     @PostMapping("/debug")
-    public List<List<Term>> debug(@RequestBody String text) {
-        List<List<Term>> seg2sentence = segment.seg2sentence(text);
+    public List<Term> debug(@RequestBody String text) {
+        List<Term> seg2sentence = segment.seg(text);
         return seg2sentence;
     }
 
