@@ -24,6 +24,8 @@ import jakarta.annotation.PostConstruct;
 public class NlpApplication {
     private Segment segment;
     private DynamicCustomDictionary dict;
+    private String emailPattern;
+    private String phonePattern;
 
     /**
      * 脱敏
@@ -36,16 +38,22 @@ public class NlpApplication {
 
         //先通过正则表达式过滤掉电子邮箱和电话号码
         // 匹配邮箱
-        String emailPattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
+        emailPattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
         Pattern emailRegex = Pattern.compile(emailPattern);
         Matcher emailMatcher = emailRegex.matcher(text);
-        text = emailMatcher.replaceAll("******@**.***");
+        while (emailMatcher.find()){
+            //利用DesensitizedUtil对邮件进行脱敏
+            text = emailMatcher.replaceAll(DesensitizedUtil.email(emailMatcher.group()));
+        }
 
         // 匹配电话号码
-        String phonePattern = "\\(?(\\d{3})\\)?[-. ]?(\\d{3})[-. ]?(\\d{4})[1-9]?";
+        phonePattern = "\\(?(\\d{3})\\)?[-. ]?(\\d{3})[-. ]?(\\d{4})[1-9]?";
         Pattern phoneRegex = Pattern.compile(phonePattern);
         Matcher phoneMatcher = phoneRegex.matcher(text);
-        text = phoneMatcher.replaceAll("***********");
+        while (phoneMatcher.find()){
+            //利用DesensitizedUtil对电话进行脱敏
+            text = phoneMatcher.replaceAll(DesensitizedUtil.mobilePhone(phoneMatcher.group()));
+        }
 
         //对句子进行词性分类
         List<Term> termList = segment.seg(text);
