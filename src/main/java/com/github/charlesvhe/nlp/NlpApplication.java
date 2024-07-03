@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cn.hutool.core.util.DesensitizedUtil;
+import com.github.charlesvhe.nlp.pojo.DictItem;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,7 +27,7 @@ import jakarta.annotation.PostConstruct;
 public class NlpApplication {
     private Segment segment;
     private DynamicCustomDictionary dict;
-    private List<String> emailPatternList = Arrays.asList("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}");
+    private List<String> emailPatternList = Arrays.asList("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
     //缓存email正则化列表
     private static List<Pattern> emailRegexList = new ArrayList<>();
     private List<String> phonePatternList = Arrays.asList("\\(?(\\d{3})\\)?[-. ]?(\\d{3})[-. ]?(\\d{4})[1-9]?");
@@ -97,18 +98,20 @@ public class NlpApplication {
 
     @PostMapping("/debug")
     public List<Term> debug(@RequestBody String text) {
-        List<Term> seg2sentence = segment.seg(text);
+        List<Term> seg2sentence = new ArrayList<>(segment.seg(text));
         return seg2sentence;
     }
 
     /**
+     * @description: 添加新词
+     * @params: dictItem
+     * @date: 2024/7/3 11:17
      * @return
      */
     @PostMapping("/dict")
-    public String dict() {
-        dict.add("null", "null");
-
-        return "text";
+    public Boolean dict(@RequestBody DictItem dictItem) {
+        boolean insertResult = dict.insert(dictItem.getWord(), dictItem.getNature());
+        return insertResult;
     }
 
     /**
